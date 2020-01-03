@@ -1,5 +1,5 @@
 <?php
-namespace today\GqlExtend;
+namespace today\gqlextend;
 
 use yii\base\Event;
 use markhuot\CraftQL\Types\VolumeInterface;

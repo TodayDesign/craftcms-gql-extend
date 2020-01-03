@@ -27,9 +27,9 @@
     }
   },
   "extra": {
-    "handle": "GqlExtend",
+    "handle": "gql-extend",
     "name": "GqlExtend",
     "documentationUrl": "https://github.com/TodayDesign/craftcms-gql-extend/blob/master/README.md",
-    "class": "today\\GqlExtend\\GqlExtend"
+    "class": "today\\gqlextend\\GqlExtend"
   }
 }
