@@ -36,6 +36,12 @@ class GqlExtend extends \craft\base\Plugin
                     return $root->__isset('linkDescription') ? $root->getFieldValue('linkDescription') : '';
                 });
 
+            // Resolve introduction
+            $event->schema->addStringField('introduction')
+            ->resolve(function ($root, $args) {
+                return $root->__isset('introduction') ? $root->getFieldValue('introduction') : '';
+            });
+
             $breadcrumbType = $event->schema->createObjectType('BreadcrumbItem');
             $breadcrumbType->addStringField('title');
             $breadcrumbType->addStringField('href');
