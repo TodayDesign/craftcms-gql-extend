@@ -15,141 +15,153 @@ class GqlExtend extends \craft\base\Plugin
 
     function addFields ()
     {
-        Event::on(\markhuot\CraftQL\Types\EntryInterface::class,\markhuot\CraftQL\Events\AlterSchemaFields::EVENT, function (\markhuot\CraftQL\Events\AlterSchemaFields $event) {
-            $field = $event->sender;
+        Event::on(
+            \markhuot\CraftQL\Types\EntryInterface::class,
+            \markhuot\CraftQL\Events\AlterSchemaFields::EVENT,
+            [$this, 'extendSchema']
+        );
 
-            // Add a relative link to be used in app
-            $event->schema->addStringField('href')
-                ->resolve(function ($root, $args) {
-                    return $root->uri === '__home__' ? '/' : '/' . $root->uri . '/';
-                });
+        Event::on(
+            \markhuot\CraftQL\Types\CategoryInterface::class,
+            \markhuot\CraftQL\Events\AlterSchemaFields::EVENT,
+            [$this, 'extendSchema']
+        );
+    }
 
-            // Resolve link text
-            $event->schema->addStringField('linkText')
-                ->resolve(function ($root, $args) {
-                    return $root->__isset('linkText') ? $root->getFieldValue('linkText') : '';
-                });
+    function extendSchema (\markhuot\CraftQL\Events\AlterSchemaFields $event) {
+        $field = $event->sender;
 
-            // Resolve link description
-            $event->schema->addStringField('linkDescription')
-                ->resolve(function ($root, $args) {
-                    return $root->__isset('linkDescription') ? $root->getFieldValue('linkDescription') : '';
-                });
-
-            // Resolve introduction
-            $event->schema->addStringField('introduction')
+        // Add a relative link to be used in app
+        $event->schema->addStringField('href')
             ->resolve(function ($root, $args) {
-                return $root->__isset('introduction') ? $root->getFieldValue('introduction') : '';
+                return $root->uri === '__home__' ? '/' : '/' . $root->uri . '/';
             });
 
-            $breadcrumbType = $event->schema->createObjectType('BreadcrumbItem');
-            $breadcrumbType->addStringField('title');
-            $breadcrumbType->addStringField('href');
+        // Resolve link text
+        $event->schema->addStringField('linkText')
+            ->resolve(function ($root, $args) {
+                return $root->__isset('linkText') ? $root->getFieldValue('linkText') : '';
+            });
 
-            $event->schema->addField('breadcrumbs')
-                ->lists()
-                ->type($breadcrumbType)
-                // ->description('Array of entries to show the current position within the site structure.')
-                // ->values(['title' => 'Title of the entry', 'href' => 'Relative link of the entry'])
-                ->resolve(function ($root, $args) {
-                    // Build the breadcrumb trail
-                    $breadcrumbs = GqlExtend::addBreadcrumb($root);
+        // Resolve link description
+        $event->schema->addStringField('linkDescription')
+            ->resolve(function ($root, $args) {
+                return $root->__isset('linkDescription') ? $root->getFieldValue('linkDescription') : '';
+            });
 
-                    // Add home page
-                    array_push($breadcrumbs, array(
-                        'title' => 'Home',
-                        'href' => '/'
-                    ));
+        // Resolve introduction
+        $event->schema->addStringField('introduction')
+        ->resolve(function ($root, $args) {
+            return $root->__isset('introduction') ? $root->getFieldValue('introduction') : '';
+        });
 
-                    return array_reverse($breadcrumbs);
-                });
+        $breadcrumbType = $event->schema->createObjectType('BreadcrumbItem');
+        $breadcrumbType->addStringField('title');
+        $breadcrumbType->addStringField('href');
 
-            $imageType = $event->schema->createObjectType('Image');
-            $imageType->addStringField('src');
-            $imageType->addStringField('srcset');
-            $imageType->addStringField('alt');
-            $imageType->addStringField('position');
+        $event->schema->addField('breadcrumbs')
+            ->lists()
+            ->type($breadcrumbType)
+            // ->description('Array of entries to show the current position within the site structure.')
+            // ->values(['title' => 'Title of the entry', 'href' => 'Relative link of the entry'])
+            ->resolve(function ($root, $args) {
+                // Build the breadcrumb trail
+                $breadcrumbs = GqlExtend::addBreadcrumb($root);
 
-            $socialType = $event->schema->createObjectType('Social');
-            $socialType->addStringField('title');
-            $socialType->addStringField('description');
-            $socialType->addField('image')->type($imageType);
+                // Add home page
+                array_push($breadcrumbs, array(
+                    'title' => 'Home',
+                    'href' => '/'
+                ));
 
-            $seoType = $event->schema->createObjectType('SEO');
-            $seoType->addStringField('title');
-            $seoType->addStringField('description');
-            $seoType->addStringField('keywords');
-            $seoType->addField('social')->type($socialType);
-            $seoType->addBooleanField('noindex');
-            $seoType->addBooleanField('nofollow');
+                return array_reverse($breadcrumbs);
+            });
 
-            // Add featured image
-            $event->schema->addField('thumbnail')
-                ->type($imageType)
-                ->resolve(function ($root, $args) {
-                    $asset = $root->__isset('featuredImage') && $root->getFieldValue('featuredImage') ? $root->getFieldValue('featuredImage')->one() : false;
+        $imageType = $event->schema->createObjectType('Image');
+        $imageType->addStringField('src');
+        $imageType->addStringField('srcset');
+        $imageType->addStringField('alt');
+        $imageType->addStringField('position');
 
-                    if (!$asset) {
-                        return null;
-                    }
+        $socialType = $event->schema->createObjectType('Social');
+        $socialType->addStringField('title');
+        $socialType->addStringField('description');
+        $socialType->addField('image')->type($imageType);
 
-                    $alt = $asset ? $asset->title : '';
-                    $src = $asset ? $asset->url : '';
-                    $srcset = '';
-                    $optimizedImages = $asset ? $asset->optimizedImages : false;
+        $seoType = $event->schema->createObjectType('SEO');
+        $seoType->addStringField('title');
+        $seoType->addStringField('description');
+        $seoType->addStringField('keywords');
+        $seoType->addField('social')->type($socialType);
+        $seoType->addBooleanField('noindex');
+        $seoType->addBooleanField('nofollow');
 
-                    if ($optimizedImages) {
-                        $srcset = array();
+        // Add featured image
+        $event->schema->addField('thumbnail')
+            ->type($imageType)
+            ->resolve(function ($root, $args) {
+                $asset = $root->__isset('featuredImage') && $root->getFieldValue('featuredImage') ? $root->getFieldValue('featuredImage')->one() : false;
 
-                        foreach ($optimizedImages->optimizedImageUrls as $key=>$value) {
-                            array_push($srcset, $value . ' ' . $key . 'w');
-                        };
+                if (!$asset) {
+                    return null;
+                }
 
-                        $srcset = implode($srcset, ', ');
-                    }
+                $alt = $asset ? $asset->title : '';
+                $src = $asset ? $asset->url : '';
+                $srcset = '';
+                $optimizedImages = $asset ? $asset->optimizedImages : false;
 
-                    return array(
-                        'src' =>  $src,
-                        'srcset' => $srcset,
-                        'alt' => $asset->title,
-                        'position' => ($asset->focalPoint['x'] * 100) . '% ' . ($asset->focalPoint['y'] * 100) . '%'
-                    );
-                });
+                if ($optimizedImages) {
+                    $srcset = array();
 
-            // Add SEO
-            $event->schema->addField('seo')
-                ->type($seoType)
-                ->resolve(function ($root, $args) {
-                    $title = $root->__isset('seoTitle') && $root->getFieldValue('seoTitle') ? $root->getFieldValue('seoTitle') : $root->title;
-                    $introduction = $root->__isset('introduction') ? $root->getFieldValue('introduction') : '';
-                    $description = $root->__isset('seoDescription') && $root->getFieldValue('seoDescription') ? $root->getFieldValue('seoDescription') : $introduction;
-                    $asset = $root->__isset('featuredImage') && $root->getFieldValue('featuredImage') ? $root->getFieldValue('featuredImage')->one() : false;
-                    $image = null;
-
-                    // Add site name
-                    $title .= " | " . $root->getSite()->name;
-
-                    if ($asset) {
-                        $image = array(
-                            'alt' => $asset->title,
-                            'src' => $asset->url
-                        );
+                    foreach ($optimizedImages->optimizedImageUrls as $key=>$value) {
+                        array_push($srcset, $value . ' ' . $key . 'w');
                     };
 
-                    return array(
+                    $srcset = implode($srcset, ', ');
+                }
+
+                return array(
+                    'src' =>  $src,
+                    'srcset' => $srcset,
+                    'alt' => $asset->title,
+                    'position' => ($asset->focalPoint['x'] * 100) . '% ' . ($asset->focalPoint['y'] * 100) . '%'
+                );
+            });
+
+        // Add SEO
+        $event->schema->addField('seo')
+            ->type($seoType)
+            ->resolve(function ($root, $args) {
+                $title = $root->__isset('seoTitle') && $root->getFieldValue('seoTitle') ? $root->getFieldValue('seoTitle') : $root->title;
+                $introduction = $root->__isset('introduction') ? $root->getFieldValue('introduction') : '';
+                $description = $root->__isset('seoDescription') && $root->getFieldValue('seoDescription') ? $root->getFieldValue('seoDescription') : $introduction;
+                $asset = $root->__isset('featuredImage') && $root->getFieldValue('featuredImage') ? $root->getFieldValue('featuredImage')->one() : false;
+                $image = null;
+
+                // Add site name
+                $title .= " | " . $root->getSite()->name;
+
+                if ($asset) {
+                    $image = array(
+                        'alt' => $asset->title,
+                        'src' => $asset->url
+                    );
+                };
+
+                return array(
+                    'title' => $title,
+                    'description' => $description,
+                    'keywords' => $root->__isset('seoKeywords') ? $root->getFieldValue('seoKeywords') : '',
+                    'social' => array(
                         'title' => $title,
                         'description' => $description,
-                        'keywords' => $root->__isset('seoKeywords') ? $root->getFieldValue('seoKeywords') : '',
-                        'social' => array(
-                            'title' => $title,
-                            'description' => $description,
-                            'image' => $image
-                        ),
-                        'noindex' => $root->__isset('noindex') ? $root->getFieldValue('noindex') : false,
-                        'nofollow' => $root->__isset('nofollow') ? $root->getFieldValue('nofollow') : false,
-                    );
-                });
-        });
+                        'image' => $image
+                    ),
+                    'noindex' => $root->__isset('noindex') ? $root->getFieldValue('noindex') : false,
+                    'nofollow' => $root->__isset('nofollow') ? $root->getFieldValue('nofollow') : false,
+                );
+            });
     }
 
     static function addBreadcrumb($entry, $breadcrumbs = array()) {
