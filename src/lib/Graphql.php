@@ -139,6 +139,8 @@ class GqlExtendGraphql
                         'description' => [ 'type' => Type::string() ],
                         'keywords' => [ 'type' => Type::string() ],
                         'social' => [ 'type' => $SocialType ],
+                        'noindex' => [ 'type' => Type::boolean() ],
+                        'nofollow' => [ 'type' => Type::boolean() ],
                     ]
                 ]);
 
@@ -171,6 +173,8 @@ class GqlExtendGraphql
                                 'description' => $description,
                                 'image' => $image
                             ),
+                            'noindex' => $source->__isset('noindex') ? $root->getFieldValue('noindex') : false,
+                            'nofollow' => $source->__isset('nofollow') ? $root->getFieldValue('nofollow') : false,
                         );
                     }
                 ];
