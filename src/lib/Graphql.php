@@ -25,7 +25,7 @@ class GqlExtendGraphql
         Event::on(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, function(DefineGqlTypeFieldsEvent $event) {
 
             // Extend entry and category interface
-            if ($event->typeName == 'EntryInterface' || $event->typeName == 'Interface') {
+            if ($event->typeName == 'EntryInterface' || $event->typeName == 'CategoryInterface') {
 
                 // Add a relative link to be used in nuxt app
                 $event->fields['href'] = [
@@ -55,7 +55,7 @@ class GqlExtendGraphql
                 ];
 
                 $ImageType = new ObjectType([
-                    'name' => 'Image',
+                    'name' => $event->typeName . 'Image',
                     'fields' => [
                         'src' => [ 'type' => Type::string() ],
                         'srcset' => [ 'type' => Type::string() ],
@@ -99,7 +99,7 @@ class GqlExtendGraphql
                 ];
 
                 $BreadcrumbType = new ObjectType([
-                    'name' => 'Breadcrumb',
+                    'name' => $event->typeName . 'Breadcrumb',
                     'fields' => [
                         'title' => [ 'type' => Type::string() ],
                         'href' => [ 'type' => Type::string() ],
@@ -124,7 +124,7 @@ class GqlExtendGraphql
                 ];
 
                 $SocialType = new ObjectType([
-                    'name' => 'Social',
+                    'name' => $event->typeName . 'Social',
                     'fields' => [
                         'title' => [ 'type' => Type::string() ],
                         'description' => [ 'type' => Type::string() ],
@@ -133,7 +133,7 @@ class GqlExtendGraphql
                 ]);
 
                 $SEOType = new ObjectType([
-                    'name' => 'SEO',
+                    'name' => $event->typeName . 'SEO',
                     'fields' => [
                         'title' => [ 'type' => Type::string() ],
                         'description' => [ 'type' => Type::string() ],
@@ -173,8 +173,8 @@ class GqlExtendGraphql
                                 'description' => $description,
                                 'image' => $image
                             ),
-                            'noindex' => $source->__isset('noindex') ? $root->getFieldValue('noindex') : false,
-                            'nofollow' => $source->__isset('nofollow') ? $root->getFieldValue('nofollow') : false,
+                            'noindex' => $source->__isset('noindex') ? $source->getFieldValue('noindex') : false,
+                            'nofollow' => $source->__isset('nofollow') ? $source->getFieldValue('nofollow') : false,
                         );
                     }
                 ];
