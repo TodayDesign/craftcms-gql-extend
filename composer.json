@@ -2,7 +2,7 @@
 {
   "name": "today/gql-extend",
   "description": "A CraftCMS plugin to extend the GraphQL scheme for entries with additional fields.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "craft-plugin",
   "keywords": [],
   "license": "MIT",
