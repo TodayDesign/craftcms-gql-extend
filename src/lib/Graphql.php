@@ -77,7 +77,7 @@ class GqlExtendGraphql
                         $alt = $asset ? $asset->title : '';
                         $src = $asset ? $asset->url : '';
                         $srcset = '';
-                        $optimizedImages = $asset ? $asset->optimizedImages : false;
+                        $optimizedImages = $asset ? $asset->__isset('optimizedImages') : false;
 
                         if ($optimizedImages) {
                             $srcset = array();
