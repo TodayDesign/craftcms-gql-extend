@@ -5,6 +5,8 @@ use yii\base\Event;
 use markhuot\CraftQL\Types\VolumeInterface;
 use craft\events\DefineGqlTypeFieldsEvent;
 use craft\gql\TypeManager;
+use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeLoader;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ObjectType;
@@ -13,7 +15,103 @@ class GqlExtendGraphql
 {
     public static function init()
     {
-		  GqlExtendGraphql::addFields();
+        GqlExtendGraphql::addTypes();
+        GqlExtendGraphql::addFields();
+    }
+
+    static function getImageType ()
+    {
+        $typeName = 'Image';
+
+        if (GqlEntityRegistry::getEntity($typeName)) {
+            return GqlEntityRegistry::getEntity($typeName);
+        }
+
+        $ImageType = new ObjectType([
+            'name' => 'Image',
+            'fields' => [
+                'src' => [ 'type' => Type::string() ],
+                'srcset' => [ 'type' => Type::string() ],
+                'alt' => [ 'type' => Type::string() ],
+                'position' => [ 'type' => Type::string() ]
+            ]
+        ]);
+
+        GqlEntityRegistry::createEntity($typeName, $ImageType);
+        TypeLoader::registerType($typeName, function () use ($ImageType) { return $ImageType ;});
+    }
+
+    static function getSocialType ()
+    {
+        $typeName = 'Social';
+
+        if (GqlEntityRegistry::getEntity($typeName)) {
+            return GqlEntityRegistry::getEntity($typeName);
+        }
+
+        $SocialType = new ObjectType([
+            'name' => 'Social',
+            'fields' => [
+                'title' => [ 'type' => Type::string() ],
+                'description' => [ 'type' => Type::string() ],
+                'image' => [ 'type' => GqlExtendGraphql::getImageType() ],
+            ]
+        ]);
+
+        GqlEntityRegistry::createEntity($typeName, $SocialType);
+        TypeLoader::registerType($typeName, function () use ($SocialType) { return $SocialType ;});
+    }
+
+    static function getSEOType ()
+    {
+        $typeName = 'SEO';
+
+        if (GqlEntityRegistry::getEntity($typeName)) {
+            return GqlEntityRegistry::getEntity($typeName);
+        }
+
+        $SEOType = new ObjectType([
+            'name' => 'SEO',
+            'fields' => [
+                'title' => [ 'type' => Type::string() ],
+                'description' => [ 'type' => Type::string() ],
+                'keywords' => [ 'type' => Type::string() ],
+                'social' => [ 'type' => GqlExtendGraphql::getSocialType() ],
+                'noindex' => [ 'type' => Type::boolean() ],
+                'nofollow' => [ 'type' => Type::boolean() ],
+            ]
+        ]);
+
+        GqlEntityRegistry::createEntity($typeName, $SEOType);
+        TypeLoader::registerType($typeName, function () use ($SEOType) { return $SEOType ;});
+    }
+
+    static function getBreadcrumbType ()
+    {
+        $typeName = 'Breadcrumb';
+
+        if (GqlEntityRegistry::getEntity($typeName)) {
+            return GqlEntityRegistry::getEntity($typeName);
+        }
+
+        $BreadcrumbType = new ObjectType([
+            'name' => 'Breadcrumb',
+            'fields' => [
+                'title' => [ 'type' => Type::string() ],
+                'href' => [ 'type' => Type::string() ],
+            ]
+        ]);
+
+        GqlEntityRegistry::createEntity($typeName, $BreadcrumbType);
+        TypeLoader::registerType($BreadcrumbType, function () use ($BreadcrumbType) { return $BreadcrumbType ;});
+    }
+
+    static function addTypes ()
+    {
+        GqlExtendGraphql::getImageType();
+        GqlExtendGraphql::getSocialType();
+        GqlExtendGraphql::getSEOType();
+        GqlExtendGraphql::getBreadcrumbType();
     }
 
     static function addFields ()
@@ -54,19 +152,9 @@ class GqlExtendGraphql
                     }
                 ];
 
-                $ImageType = new ObjectType([
-                    'name' => $event->typeName . 'Image',
-                    'fields' => [
-                        'src' => [ 'type' => Type::string() ],
-                        'srcset' => [ 'type' => Type::string() ],
-                        'alt' => [ 'type' => Type::string() ],
-                        'position' => [ 'type' => Type::string() ]
-                    ]
-                ]);
-
                 $event->fields['thumbnail'] = [
                     'name' => 'thumbnail',
-                    'type' => $ImageType,
+                    'type' => GqlExtendGraphql::getImageType(),
                     'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
                         $asset = $source->__isset('featuredImage') && $source->getFieldValue('featuredImage') ? $source->getFieldValue('featuredImage')->first() : false;
 
@@ -77,7 +165,7 @@ class GqlExtendGraphql
                         $alt = $asset ? $asset->title : '';
                         $src = $asset ? $asset->url : '';
                         $srcset = '';
-                        $optimizedImages = $asset ? $asset->__isset('optimizedImages') : false;
+                        $optimizedImages = $asset ? $asset->optimizedImages : false;
 
                         if ($optimizedImages) {
                             $srcset = array();
@@ -98,18 +186,11 @@ class GqlExtendGraphql
                     }
                 ];
 
-                $BreadcrumbType = new ObjectType([
-                    'name' => $event->typeName . 'Breadcrumb',
-                    'fields' => [
-                        'title' => [ 'type' => Type::string() ],
-                        'href' => [ 'type' => Type::string() ],
-                    ]
-                ]);
 
                 // Add breadcrumbs
                 $event->fields['breadcrumbs'] = [
                     'name' => 'breadcrumbs',
-                    'type' => Type::listOf($BreadcrumbType),
+                    'type' => Type::listOf(GqlExtendGraphql::getBreadcrumbType()),
                     'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
                         $breadcrumbs = GqlExtendGraphql::addBreadcrumb($source);
 
@@ -123,31 +204,10 @@ class GqlExtendGraphql
                     }
                 ];
 
-                $SocialType = new ObjectType([
-                    'name' => $event->typeName . 'Social',
-                    'fields' => [
-                        'title' => [ 'type' => Type::string() ],
-                        'description' => [ 'type' => Type::string() ],
-                        'image' => [ 'type' => $ImageType ],
-                    ]
-                ]);
-
-                $SEOType = new ObjectType([
-                    'name' => $event->typeName . 'SEO',
-                    'fields' => [
-                        'title' => [ 'type' => Type::string() ],
-                        'description' => [ 'type' => Type::string() ],
-                        'keywords' => [ 'type' => Type::string() ],
-                        'social' => [ 'type' => $SocialType ],
-                        'noindex' => [ 'type' => Type::boolean() ],
-                        'nofollow' => [ 'type' => Type::boolean() ],
-                    ]
-                ]);
-
                 // Add SEO
                 $event->fields['seo'] = [
                     'name' => 'seo',
-                    'type' => $SEOType,
+                    'type' => GqlExtendGraphql::getSEOType(),
                     'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
                         $title = $source->__isset('seoTitle') && $source->getFieldValue('seoTitle') ? $source->getFieldValue('seoTitle') : $source->title;
                         $description = $source->__isset('seoDescription') && $source->getFieldValue('seoDescription') ? $source->getFieldValue('seoDescription') : ( $source->__isset('linkText') ? $source->getFieldValue('linkText') : '');
