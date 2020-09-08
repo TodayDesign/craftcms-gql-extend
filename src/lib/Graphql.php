@@ -33,7 +33,9 @@ class GqlExtendGraphql
                 'src' => [ 'type' => Type::string() ],
                 'srcset' => [ 'type' => Type::string() ],
                 'alt' => [ 'type' => Type::string() ],
-                'position' => [ 'type' => Type::string() ]
+                'position' => [ 'type' => Type::string() ],
+                'width' => [ 'type' => Type::int() ],
+                'height' => [ 'type' => Type::int() ]
             ]
         ]);
 
@@ -181,7 +183,9 @@ class GqlExtendGraphql
                             'src' =>  $src,
                             'srcset' => $srcset,
                             'alt' => $asset->title,
-                            'position' => ($asset->focalPoint['x'] * 100) . '% ' . ($asset->focalPoint['y'] * 100) . '%'
+                            'position' => ($asset->focalPoint['x'] * 100) . '% ' . ($asset->focalPoint['y'] * 100) . '%',
+                            'width' => $asset->width,
+                            'height' => $asset->height
                         );
                     }
                 ];
