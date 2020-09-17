@@ -182,7 +182,7 @@ class GqlExtendGraphql
                         return array(
                             'src' =>  $src,
                             'srcset' => $srcset,
-                            'alt' => $asset->title,
+                            'alt' => $alt,
                             'position' => ($asset->focalPoint['x'] * 100) . '% ' . ($asset->focalPoint['y'] * 100) . '%',
                             'width' => $asset->width,
                             'height' => $asset->height
