@@ -164,7 +164,7 @@ class GqlExtendGraphql
                             return null;
                         }
 
-                        $alt = $asset ? $asset->title : '';
+                        $alt = $asset && $asset->__isset('altText') ? $asset->altText : ($asset ? $asset->title : '');
                         $src = $asset ? $asset->url : '';
                         $srcset = '';
                         $optimizedImages = $asset && $asset->__isset('optimizedImages') ? $asset->optimizedImages : false;
@@ -223,7 +223,6 @@ class GqlExtendGraphql
 
                         if ($asset) {
                             $image = array(
-                                'alt' => $asset->title,
                                 'src' => $asset->url
                             );
                         };
