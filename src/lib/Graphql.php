@@ -34,6 +34,7 @@ class GqlExtendGraphql
                 'srcset' => [ 'type' => Type::string() ],
                 'alt' => [ 'type' => Type::string() ],
                 'position' => [ 'type' => Type::string() ],
+                'bgColor' => [ 'type' => Type::string() ],
                 'width' => [ 'type' => Type::int() ],
                 'height' => [ 'type' => Type::int() ]
             ]
@@ -167,6 +168,7 @@ class GqlExtendGraphql
                         $alt = $asset && $asset->__isset('altText') ? $asset->altText : ($asset ? $asset->title : '');
                         $src = $asset ? $asset->url : '';
                         $srcset = '';
+                        $bgColor = $asset && $asset->__isset('imageBgColour') ? $asset->imageBgColour : '';
                         $optimizedImages = $asset && $asset->__isset('optimizedImages') ? $asset->optimizedImages : false;
 
                         if ($optimizedImages) {
@@ -184,6 +186,7 @@ class GqlExtendGraphql
                             'srcset' => $srcset,
                             'alt' => $alt,
                             'position' => ($asset->focalPoint['x'] * 100) . '% ' . ($asset->focalPoint['y'] * 100) . '%',
+                            'bgColor' => $bgColor,
                             'width' => $asset->width,
                             'height' => $asset->height
                         );
