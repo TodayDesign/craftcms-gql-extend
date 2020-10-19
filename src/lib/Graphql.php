@@ -159,7 +159,7 @@ class GqlExtendGraphql
                     'name' => 'thumbnail',
                     'type' => GqlExtendGraphql::getImageType(),
                     'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
-                        $asset = $source->__isset('featuredImage') && $source->getFieldValue('featuredImage') ? $source->getFieldValue('featuredImage')->first() : false;
+                        $asset = $source->__isset('featuredImage') && $source->getFieldValue('featuredImage') ? $source->getFieldValue('featuredImage')->one() : false;
 
                         if (!$asset) {
                             return null;
@@ -218,7 +218,7 @@ class GqlExtendGraphql
                     'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
                         $title = $source->__isset('seoTitle') && $source->getFieldValue('seoTitle') ? $source->getFieldValue('seoTitle') : $source->title;
                         $description = $source->__isset('seoDescription') && $source->getFieldValue('seoDescription') ? $source->getFieldValue('seoDescription') : ( $source->__isset('linkText') ? $source->getFieldValue('linkText') : '');
-                        $asset = $source->__isset('featuredImage') && $source->getFieldValue('featuredImage') ? $source->getFieldValue('featuredImage')->first() : false;
+                        $asset = $source->__isset('featuredImage') && $source->getFieldValue('featuredImage') ? $source->getFieldValue('featuredImage')->one() : false;
                         $image = null;
 
                         // Add site name
