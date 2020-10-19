@@ -167,19 +167,9 @@ class GqlExtendGraphql
 
                         $alt = $asset && $asset->__isset('altText') ? $asset->altText : ($asset ? $asset->title : '');
                         $src = $asset ? $asset->url : '';
-                        $srcset = '';
                         $bgColor = $asset && $asset->__isset('imageBgColour') ? $asset->imageBgColour : '';
                         $optimizedImages = $asset && $asset->__isset('optimizedImages') ? $asset->optimizedImages : false;
-
-                        if ($optimizedImages) {
-                            $srcset = array();
-
-                            foreach ($optimizedImages->optimizedImageUrls as $key=>$value) {
-                                array_push($srcset, $value . ' ' . $key . 'w');
-                            };
-
-                            $srcset = implode($srcset, ', ');
-                        }
+                        $srcset = $optimizedImages ? $optimizedImages->srcset : '';
 
                         return array(
                             'src' =>  $src,
