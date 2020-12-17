@@ -131,14 +131,11 @@ class GqlExtendCraftql
         $event->schema->addField('seo')
             ->type($seoType)
             ->resolve(function ($root, $args) {
-                $title = $root->__isset('seoTitle') && $root->getFieldValue('seoTitle') ? $root->getFieldValue('seoTitle') : $root->title;
+                $title = $root->__isset('seoTitle') && $root->getFieldValue('seoTitle') ? $root->getFieldValue('seoTitle') : ($root->title . " | " . $root->getSite()->name);
                 $introduction = $root->__isset('introduction') ? $root->getFieldValue('introduction') : '';
                 $description = $root->__isset('seoDescription') && $root->getFieldValue('seoDescription') ? $root->getFieldValue('seoDescription') : $introduction;
                 $asset = $root->__isset('featuredImage') && $root->getFieldValue('featuredImage') ? $root->getFieldValue('featuredImage')->one() : false;
                 $image = null;
-
-                // Add site name
-                $title .= " | " . $root->getSite()->name;
 
                 if ($asset) {
                     $image = array(

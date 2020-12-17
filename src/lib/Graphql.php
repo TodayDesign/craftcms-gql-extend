@@ -206,13 +206,10 @@ class GqlExtendGraphql
                     'name' => 'seo',
                     'type' => GqlExtendGraphql::getSEOType(),
                     'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
-                        $title = $source->__isset('seoTitle') && $source->getFieldValue('seoTitle') ? $source->getFieldValue('seoTitle') : $source->title;
+                        $title = $source->__isset('seoTitle') && $source->getFieldValue('seoTitle') ? $source->getFieldValue('seoTitle') : ($source->title . " | " . $source->getSite()->name);
                         $description = $source->__isset('seoDescription') && $source->getFieldValue('seoDescription') ? $source->getFieldValue('seoDescription') : ( $source->__isset('linkText') ? $source->getFieldValue('linkText') : '');
                         $asset = $source->__isset('featuredImage') && $source->getFieldValue('featuredImage') ? $source->getFieldValue('featuredImage')->one() : false;
                         $image = null;
-
-                        // Add site name
-                        $title .= " | " . $source->getSite()->name;
 
                         if ($asset) {
                             $image = array(
