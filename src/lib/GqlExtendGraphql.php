@@ -176,7 +176,7 @@ class GqlExtendGraphql
                                 array_push($srcset, $value . ' ' . $key . 'w');
                             };
 
-                            $srcset = implode($srcset, ', ');
+                            $srcset = implode(', ', $srcset);
                         }
 
                         return array(
