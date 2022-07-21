@@ -207,40 +207,6 @@ class GqlExtendGraphql
                         return array_reverse($breadcrumbs);
                     }
                 ];
-
-                // Add SEO
-                $event->fields['seo'] = [
-                    'name' => 'seo',
-                    'type' => GqlExtendGraphql::getSEOType(),
-                    'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
-                        $title = $source->__isset('seoTitle') && $source->getFieldValue('seoTitle') ? $source->getFieldValue('seoTitle') : $source->title;
-                        $description = $source->__isset('seoDescription') && $source->getFieldValue('seoDescription') ? $source->getFieldValue('seoDescription') : ( $source->__isset('linkText') ? $source->getFieldValue('linkText') : '');
-                        $asset = $source->__isset('featuredImage') && $source->getFieldValue('featuredImage') ? $source->getFieldValue('featuredImage')->one() : false;
-                        $image = null;
-
-                        // Add site name
-                        $title .= " | " . $source->getSite()->name;
-
-                        if ($asset) {
-                            $image = array(
-                                'src' => $asset->url
-                            );
-                        };
-
-                        return array(
-                            'title' => $title,
-                            'description' => $description,
-                            'keywords' => $source->__isset('seoKeywords') ? $source->getFieldValue('seoKeywords') : '',
-                            'social' => array(
-                                'title' => $title,
-                                'description' => $description,
-                                'image' => $image
-                            ),
-                            'noindex' => $source->__isset('noindex') ? $source->getFieldValue('noindex') : false,
-                            'nofollow' => $source->__isset('nofollow') ? $source->getFieldValue('nofollow') : false,
-                        );
-                    }
-                ];
             }
         });
     }
