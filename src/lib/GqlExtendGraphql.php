@@ -1,6 +1,7 @@
 <?php
 namespace today\gqlextend\lib;
 
+use Craft;
 use yii\base\Event;
 use markhuot\CraftQL\Types\VolumeInterface;
 use craft\events\DefineGqlTypeFieldsEvent;
@@ -132,7 +133,7 @@ class GqlExtendGraphql
                     'name' => 'href',
                     'type' => Type::string(),
                     'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
-                        return $source->uri === '__home__' ? '/' : '/' . $source->uri . '/';
+                        return $source->uri === '__home__' ? '/' : '/' . $source->uri . GqlExtendGraphql::getTrailingSlash();
                     }
                 ];
 
@@ -214,7 +215,7 @@ class GqlExtendGraphql
     static function addBreadcrumb($entry, $breadcrumbs = array()) {
         array_push($breadcrumbs, array(
             'title' => $entry->title,
-            'href' => '/' . $entry->uri . '/'
+            'href' => '/' . $entry->uri . GqlExtendGraphql::getTrailingSlash()
         ));
 
         $parent = $entry->getParent();
@@ -224,5 +225,13 @@ class GqlExtendGraphql
         }
 
         return $breadcrumbs;
+    }
+
+    static function getTrailingSlash() {
+        if (Craft::$app->getConfig()->getGeneral()->addTrailingSlashesToUrls) {
+            return '/';
+        }
+
+        return '';
     }
 }
