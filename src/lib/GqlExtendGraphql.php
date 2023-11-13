@@ -4,6 +4,7 @@ namespace today\gqlextend\lib;
 use Craft;
 use yii\base\Event;
 use markhuot\CraftQL\Types\VolumeInterface;
+use craft\elements\Entry;
 use craft\events\DefineGqlTypeFieldsEvent;
 use craft\gql\TypeManager;
 use craft\gql\GqlEntityRegistry;
@@ -109,12 +110,34 @@ class GqlExtendGraphql
         TypeLoader::registerType($BreadcrumbType, function () use ($BreadcrumbType) { return $BreadcrumbType ;});
     }
 
+    static function getRelatedType ()
+    {
+        $typeName = 'Related';
+
+        if (GqlEntityRegistry::getEntity($typeName)) {
+            return GqlEntityRegistry::getEntity($typeName);
+        }
+
+        $RelatedType = new ObjectType([
+            'name' => 'Related',
+            'fields' => [
+                'title' => [ 'type' => Type::string() ],
+                'href' => [ 'type' => Type::string() ],
+                'id' => [ 'type' => Type::int() ],
+            ]
+        ]);
+
+        GqlEntityRegistry::createEntity($typeName, $RelatedType);
+        TypeLoader::registerType($typeName, function () use ($RelatedType) { return $RelatedType ;});
+    }
+
     static function addTypes ()
     {
         GqlExtendGraphql::getImageType();
         GqlExtendGraphql::getSocialType();
         GqlExtendGraphql::getSEOType();
         GqlExtendGraphql::getBreadcrumbType();
+        GqlExtendGraphql::getRelatedType();
     }
 
     static function addFields ()
@@ -206,6 +229,25 @@ class GqlExtendGraphql
                         ));
 
                         return array_reverse($breadcrumbs);
+                    }
+                ];
+
+                // Add related entries
+                $event->fields['related'] = [
+                    'name' => 'related',
+                    'type' => Type::listOf(GqlExtendGraphql::getRelatedType()),
+                    'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
+                        // Get entries related doing a db query
+                        $related = Entry::find()->relatedTo(['targetElement' => $source])->all();
+
+                        // Map related entries
+                        return array_map(function ($entry) {
+                            return array(
+                                'title' => $entry->title,
+                                'href' => '/' . $entry->uri . GqlExtendGraphql::getTrailingSlash(),
+                                'id' => $entry->id
+                            );
+                        }, $related);
                     }
                 ];
             }
