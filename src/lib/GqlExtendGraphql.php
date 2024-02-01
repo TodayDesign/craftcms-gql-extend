@@ -165,7 +165,11 @@ class GqlExtendGraphql
                             return null;
                         }
 
-                        $alt = $asset && $asset->__isset('altText') ? $asset->altText : ($asset ? $asset->title : '');
+                        // Use `altText` or native `alt` attribute if they exist, otherwise fallback to title
+                        $alt = $asset->__isset('altText') ? $asset->getFieldValue('altText')
+                        : ($asset->__isset('alt') ? $asset->getFieldValue('alt')
+                        : $asset->title);
+
                         $src = $asset ? $asset->url : '';
                         $srcset = '';
                         $optimizedImages = $asset && $asset->__isset('optimizedImages') ? $asset->optimizedImages : false;
