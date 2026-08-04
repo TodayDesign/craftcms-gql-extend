@@ -138,6 +138,7 @@ class GqlExtendGraphql
         GqlExtendGraphql::getSEOType();
         GqlExtendGraphql::getBreadcrumbType();
         GqlExtendGraphql::getRelatedType();
+        SitemapSettings::getType();
     }
 
     static function addFields ()
@@ -252,6 +253,17 @@ class GqlExtendGraphql
                                 'id' => $entry->id
                             );
                         }, $related);
+                    }
+                ];
+
+                // Add sitemap settings, so a headless front end can build its
+                // own sitemap. Resolves from SEOmatic where it's installed, and
+                // from Craft alone where it isn't.
+                $event->fields['sitemapSettings'] = [
+                    'name' => 'sitemapSettings',
+                    'type' => SitemapSettings::getType(),
+                    'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
+                        return SitemapSettings::resolve($source);
                     }
                 ];
             }
